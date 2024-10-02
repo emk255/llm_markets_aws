@@ -16,7 +16,7 @@ jobs = pd.read_csv('data/jobs_df.csv')[['Content', 'job_cluster']]
 job_clusters = [1,23,13]
 jobs_df = pd.DataFrame()
 for cluster in job_clusters:
-    sampled = jobs[jobs['job_cluster']==cluster].sample(35, random_state=123)
+    sampled = jobs[jobs['job_cluster']==cluster].sample(2, random_state=123)
     jobs_df = pd.concat([jobs_df, sampled])
     
 jobs_df = jobs_df.reset_index(drop = True)
@@ -25,7 +25,7 @@ resumes = pd.read_csv('data/resume_df.csv')
 resume_clusters = [10,26,23]
 resumes_df = pd.DataFrame()
 for cluster in resume_clusters:
-    sampled = resumes[resumes['resume_cluster']==cluster].sample(35, random_state=123)
+    sampled = resumes[resumes['resume_cluster']==cluster].sample(2, random_state=123)
     resumes_df = pd.concat([resumes_df, sampled])
 resumes_df = resumes_df.reset_index(drop = True)
 
@@ -41,7 +41,7 @@ job_id_map = {job: hash_id(job) for job in jobs}
 df['Resume_index'] = df['Resume'].map(resume_id_map)
 df['Job_index'] = df['Job'].map(job_id_map)
 
-prompts = [firm_rate_comb1, firm_rate_comb_short, app_rate_comb, app_rate_comb_short]
+prompts = [firm_rate_comb1, firm_rate_comb_short]
 name_dic = {firm_rate_p1:'firm_rate_p1', firm_rate_p2:'firm_rate_p2', 
             app_rate_p0:"app_rate_p0", firm_rate_lenient:'firm_rate_lenient', 
             app_rate_comb:"app_rate_comb", firm_rate_comb:"firm_rate_comb",

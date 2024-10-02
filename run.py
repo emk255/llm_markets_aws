@@ -1,4 +1,4 @@
-import boto3, re, json, random, hashlib, math, time
+import boto3, re, json, random, hashlib, math, time, os
 from model_info import model_configs
 import pandas as pd
 import numpy as np
@@ -16,7 +16,7 @@ jobs = pd.read_csv('data/jobs_df.csv')[['Content', 'job_cluster']]
 job_clusters = [1,23,13]
 jobs_df = pd.DataFrame()
 for cluster in job_clusters:
-    sampled = jobs[jobs['job_cluster']==cluster].sample(2, random_state=123)
+    sampled = jobs[jobs['job_cluster']==cluster].sample(1, random_state=123)
     jobs_df = pd.concat([jobs_df, sampled])
     
 jobs_df = jobs_df.reset_index(drop = True)
@@ -25,7 +25,7 @@ resumes = pd.read_csv('data/resume_df.csv')
 resume_clusters = [10,26,23]
 resumes_df = pd.DataFrame()
 for cluster in resume_clusters:
-    sampled = resumes[resumes['resume_cluster']==cluster].sample(2, random_state=123)
+    sampled = resumes[resumes['resume_cluster']==cluster].sample(1, random_state=123)
     resumes_df = pd.concat([resumes_df, sampled])
 resumes_df = resumes_df.reset_index(drop = True)
 
@@ -41,7 +41,7 @@ job_id_map = {job: hash_id(job) for job in jobs}
 df['Resume_index'] = df['Resume'].map(resume_id_map)
 df['Job_index'] = df['Job'].map(job_id_map)
 
-prompts = [firm_rate_comb1, firm_rate_comb_short]
+prompts = [firm_rate_comb1]
 name_dic = {firm_rate_p1:'firm_rate_p1', firm_rate_p2:'firm_rate_p2', 
             app_rate_p0:"app_rate_p0", firm_rate_lenient:'firm_rate_lenient', 
             app_rate_comb:"app_rate_comb", firm_rate_comb:"firm_rate_comb",
@@ -91,4 +91,22 @@ for col in filtered_columns:
     df[col] = pd.to_numeric(df[col], errors='coerce')
     df[col] = df[col] + np.random.uniform(0, 1, len(df[col]))
 
-df.to_csv('data/df_105x105.csv', index = False)
+csv_file_path = "data/df_105x105.csv"  
+
+df.to_csv(csv_file_path, index = False)
+
+def upload_to_s3(file_name, bucket, object_name=None):
+    if object_name is None:
+        object_name = os.path.basename(file_name)
+
+    s3_client = boto3.client('s3')
+    try:
+        response = s3_client.upload_file(file_name, bucket, object_name)
+        print(f"{file_name} has been uploaded to {bucket}/{object_name}")
+    except Exception as e:
+        print(f"Error uploading {file_name}: {e}")
+        raise e
+    
+s3_bucket = "llm-markets"  # Replace this with your S3 bucket name
+upload_to_s3(csv_file_path, s3_bucket)
+

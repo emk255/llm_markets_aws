@@ -33,7 +33,7 @@ def hash_id(x):
 
 def run_api(modelId, model_configuration, prompt):
 #     session = boto3.Session(profile_name='sso-elliot')
-    session = boto3.Session(profile_name='sso-elliot', region_name="us-west-2")
+    session = boto3.Session(region_name="us-west-2")
     bedrock = session.client(service_name='bedrock-runtime')
     
     model = model_configs[modelId]
